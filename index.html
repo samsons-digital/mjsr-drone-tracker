@@ -1023,7 +1023,6 @@ textarea { resize:vertical; min-height:80px; }
         <div style="font-size:32px;">🔒</div>
         <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:600;color:var(--text2);">Enter Instructor PIN</div>
         <input type="password" id="theoryPinInput" class="pin-input" maxlength="4" placeholder="••••" oninput="checkTheoryPin()">
-        <div style="font-size:12px;color:var(--text3);">Default PIN: 1234</div>
       </div>
     </div>
   </div>
@@ -1097,7 +1096,6 @@ textarea { resize:vertical; min-height:80px; }
         <div style="font-size:32px;">🔒</div>
         <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:600;color:var(--text2);">Enter Instructor PIN</div>
         <input type="password" id="configPinInput" class="pin-input" maxlength="4" placeholder="••••" oninput="checkConfigPin()">
-        <div style="font-size:12px;color:var(--text3);">Default PIN: 1234</div>
       </div>
     </div>
   </div>
@@ -1775,8 +1773,9 @@ function clearFlightForm() {
 // THEORY
 // ============================================================
 function checkTheoryPin() {
-  const val = document.getElementById('theoryPinInput').value;
-  if (val === state.pin) {
+  const val = document.getElementById('theoryPinInput').value.trim();
+  const pin = String(state.pin).trim();
+  if (val === pin) {
     theoryUnlocked = true;
     document.getElementById('theoryLocked').style.display = 'none';
     document.getElementById('theoryUnlockedPanel').style.display = 'block';
@@ -1953,8 +1952,9 @@ function clearAllFlights() {
 // CONFIG
 // ============================================================
 function checkConfigPin() {
-  const val = document.getElementById('configPinInput').value;
-  if(val === state.pin) {
+  const val = document.getElementById('configPinInput').value.trim();
+  const pin = String(state.pin).trim();
+  if(val === pin) {
     document.getElementById('configLocked').style.display = 'none';
     document.getElementById('configUnlocked').style.display = 'block';
     renderConfig();
@@ -2034,7 +2034,7 @@ async function revokeSignoff(id) {
 async function changePin() {
   const np = document.getElementById('cfgNewPin').value;
   const cp = document.getElementById('cfgConfirmPin').value;
-  if(np.length!==4||isNaN(np)) { toast('PIN must be exactly 4 digits.','error'); return; }
+  if(np.length!==4||isNaN(Number(np))) { toast('PIN must be exactly 4 digits.','error'); return; }
   if(np!==cp) { toast('PINs do not match.','error'); return; }
   state.pin = np;
   saveState();
