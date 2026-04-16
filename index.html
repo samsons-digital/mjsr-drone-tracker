@@ -965,11 +965,21 @@ textarea { resize:vertical; min-height:80px; }
         </div>
         <div class="form-group">
           <label>Drone / Equipment</label>
-          <input type="text" id="flightDrone" placeholder="e.g. DJI Mini 3 Pro">
+          <select id="flightDrone">
+            <option value="">— Select Drone —</option>
+            <option value="DJI Mini SE">DJI Mini SE</option>
+            <option value="DJI Mini 3 Pro">DJI Mini 3 Pro</option>
+          </select>
         </div>
         <div class="form-group full">
           <label>Location</label>
-          <input type="text" id="flightLocation" placeholder="e.g. MJSR Training Area — Main Slope">
+          <select id="flightLocation">
+            <option value="">— Select Training Area —</option>
+            <option value="Green Valley">Green Valley</option>
+            <option value="MJSR Bottom Station">MJSR Bottom Station</option>
+            <option value="MJSR Top PC">MJSR Top PC</option>
+            <option value="MJSR Top Chairlift">MJSR Top Chairlift</option>
+          </select>
         </div>
         <div class="form-group full">
           <label>Flight Type</label>
@@ -1339,12 +1349,19 @@ async function gasPost(payload) {
   const url = window._GAS_URL_OVERRIDE || GAS_URL;
   if (!url) return { ok: true, offline: true };
   try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
+    // Use GET with encoded payload — avoids CORS preflight issues from GitHub Pages
+    const encoded = encodeURIComponent(JSON.stringify(payload));
+    const res = await fetch(`${url}?payload=${encoded}`, {
+      method: 'GET',
+      redirect: 'follow'
     });
-    return await res.json();
+    const text = await res.text();
+    // GAS sometimes wraps in HTML on auth errors — detect and report cleanly
+    if (text.trim().startsWith('<')) {
+      console.warn('GAS returned HTML — likely an auth or permissions issue');
+      return { ok: false, error: 'Auth error — check deployment permissions' };
+    }
+    return JSON.parse(text);
   } catch(err) {
     console.warn('GAS call failed:', err.message);
     return { ok: false, offline: true };
@@ -2073,11 +2090,13 @@ async function saveGasUrl() {
   document.getElementById('gasUrlStatus').textContent = 'URL saved. Initialising sheet tabs...';
   // Patch the runtime URL
   window._GAS_URL_OVERRIDE = url;
-  const result = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'INIT' })
-  }).then(r => r.json()).catch(e => ({ ok: false, error: e.toString() }));
+  const encoded = encodeURIComponent(JSON.stringify({ action: 'INIT' }));
+  const result = await fetch(`${url}?payload=${encoded}`, {
+    method: 'GET', redirect: 'follow'
+  }).then(r => r.text()).then(t => {
+    if (t.trim().startsWith('<')) return { ok: false, error: 'Auth error — check deployment permissions (Who has access: Anyone)' };
+    return JSON.parse(t);
+  }).catch(e => ({ ok: false, error: e.toString() }));
   if (result.ok) {
     document.getElementById('gasUrlStatus').textContent = '✓ Sheet initialised. All tabs created. Syncing data...';
     toast('Sheet initialised successfully.', 'success');
