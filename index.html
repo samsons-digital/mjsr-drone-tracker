@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MJSR Drone Training Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f2f5;
+  --surface: #e8eaee;
+  --surface2: #dddfe5;
+  --surface3: #d2d5dd;
+  --border: #c4c8d4;
+  --border2: #b4b9c8;
+  --accent: #1a6fdb;
+  --accent2: #155bbf;
+  --accent-glow: rgba(26,111,219,0.10);
+  --gold: #c87f00;
+  --gold-dim: rgba(200,127,0,0.10);
+  --green: #1a9e5c;
+  --green-dim: rgba(26,158,92,0.10);
+  --red: #d93545;
+  --red-dim: rgba(217,53,69,0.08);
+  --amber: #c87800;
+  --text: #111318;
+  --text2: #42495e;
+  --text3: #8a93aa;
+  --m1: #0e7abf;
+  --m2: #1a9e5c;
+  --m3: #7c3aed;
+  --m4: #b86c00;
+  --m5: #d44e1a;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+
+
+/* HEADER */
+header {
+  position: sticky;
+  top:0;
+  z-index:100;
+  background: rgba(255,255,255,0.97);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  padding: 0 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  height: 56px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.header-brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.header-logo {
+  width:32px; height:32px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+}
+
+.header-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text);
+}
+
+.header-sub {
+  font-size:11px;
+  color:var(--text3);
+  font-family:'IBM Plex Mono', monospace;
+  letter-spacing:0.5px;
+}
+
+.header-right {
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.trainee-badge {
+  padding:4px 12px;
+  background: var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  font-size:12px;
+  font-family:'IBM Plex Mono', monospace;
+  color: var(--text2);
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.trainee-badge:hover { border-color:var(--accent); color:var(--accent); }
+
+/* NAV TABS */
+nav {
+  display:flex;
+  gap:0;
+  padding:0 24px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:56px;
+  z-index:99;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.nav-tab {
+  padding:14px 22px;
+  font-family:'Rajdhani', sans-serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  color:var(--text3);
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all 0.2s;
+  white-space:nowrap;
+}
+
+.nav-tab:hover { color:var(--text2); }
+.nav-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+/* MAIN CONTENT */
+main {
+  position:relative;
+  z-index:1;
+  padding:24px;
+  max-width:1300px;
+  margin:0 auto;
+}
+
+/* TAB PANELS */
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* CARDS */
+.card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.card-title {
+  font-family:'Rajdhani', sans-serif;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text3);
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.card-title::before {
+  content:'';
+  width:3px; height:14px;
+  background:var(--accent);
+  border-radius:2px;
+}
+
+/* DASHBOARD GRID */
+.dash-hero {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:16px;
+  margin-bottom:24px;
+}
+
+.stat-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px 20px;
+  position:relative;
+  overflow:hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.stat-card::after {
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:var(--accent);
+  border-radius:2px 2px 0 0;
+}
+
+.stat-label {
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text3);
+  margin-bottom:8px;
+}
+
+.stat-value {
+  font-family:'Rajdhani', sans-serif;
+  font-size:36px;
+  font-weight:700;
+  color:var(--text);
+  line-height:1;
+}
+
+.stat-sub {
+  font-size:12px;
+  color:var(--text3);
+  margin-top:4px;
+}
+
+/* MODULE PROGRESS CARDS */
+.modules-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:16px;
+  margin-bottom:24px;
+}
+
+.module-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.module-card.active-module {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.module-card.completed-module {
+  border-color: var(--green);
+}
+
+.module-card.locked-module {
+  opacity:0.5;
+}
+
+.module-header {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+
+.module-number {
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10px;
+  color:var(--text3);
+  letter-spacing:1px;
+}
+
+.module-name {
+  font-family:'Rajdhani', sans-serif;
+  font-size:17px;
+  font-weight:700;
+  color:var(--text);
+  margin:4px 0;
+  line-height:1.2;
+}
+
+.module-hours-range {
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:var(--text3);
+  margin-bottom:12px;
+}
+
+.module-badge-name {
+  font-size:11px;
+  color:var(--text2);
+  margin-bottom:16px;
+}
+
+/* PROGRESS BAR */
+.progress-wrap {
+  margin-bottom:12px;
+}
+
+.progress-label {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:6px;
+}
+
+.progress-label span {
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10px;
+  color:var(--text3);
+}
+
+.progress-track {
+  height:6px;
+  background:var(--surface3);
+  border-radius:3px;
+  overflow:hidden;
+}
+
+.progress-fill {
+  height:100%;
+  border-radius:3px;
+  transition:width 0.8s ease;
+}
+
+.hours-remaining {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  color:var(--text2);
+  margin-top:10px;
+}
+
+.hours-remaining strong {
+  color:var(--accent);
+  font-family:'IBM Plex Mono', monospace;
+}
+
+.module-status-badge {
+  padding:3px 10px;
+  border-radius:20px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:0.5px;
+}
+
+.status-active { background:var(--accent-glow); color:var(--accent); border:1px solid var(--accent); }
+.status-complete { background:var(--green-dim); color:var(--green); border:1px solid var(--green); }
+.status-locked { background:var(--surface3); color:var(--text3); border:1px solid var(--border); }
+.status-pending { background:var(--gold-dim); color:var(--gold); border:1px solid var(--gold); }
+
+/* THEORY CHECKLIST in module card */
+.theory-summary {
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--border);
+  font-size:12px;
+  color:var(--text3);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.theory-summary span { color:var(--text2); }
+
+/* FLIGHT LOG TABLE */
+.log-table-wrap {
+  overflow-x:auto;
+  margin-top:8px;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+th {
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--text3);
+  padding:10px 12px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+
+td {
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  color:var(--text2);
+  vertical-align:middle;
+}
+
+tr:hover td { background:var(--surface2); }
+
+td.highlight { color:var(--text); font-weight:500; }
+
+.module-tag {
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:4px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10px;
+  font-weight:600;
+}
+
+/* FORMS */
+.form-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+
+.form-group {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.form-group.full { grid-column:1/-1; }
+
+label {
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10px;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  color:var(--text3);
+}
+
+input, select, textarea {
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:6px;
+  padding:10px 14px;
+  color:var(--text);
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:14px;
+  outline:none;
+  transition:border-color 0.2s;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+
+select option { background:var(--surface2); }
+textarea { resize:vertical; min-height:80px; }
+
+/* BUTTONS */
+.btn {
+  padding:10px 20px;
+  border-radius:6px;
+  border:none;
+  font-family:'Rajdhani', sans-serif;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+
+.btn-primary {
+  background:var(--accent);
+  color:#fff;
+}
+.btn-primary:hover { background:var(--accent2); box-shadow:0 0 16px var(--accent-glow); }
+
+.btn-danger {
+  background:transparent;
+  border:1px solid var(--red);
+  color:var(--red);
+}
+.btn-danger:hover { background:var(--red-dim); }
+
+.btn-ghost {
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--text2);
+}
+.btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+
+.btn-gold {
+  background:var(--gold);
+  color:#fff;
+}
+.btn-gold:hover { background:#a86800; }
+
+/* THEORY SECTION */
+.theory-section {
+  margin-top:20px;
+}
+
+.theory-module-group {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  margin-bottom:12px;
+  overflow:hidden;
+}
+
+.theory-module-header {
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  cursor:pointer;
+  border-bottom:1px solid var(--border);
+  background:var(--surface2);
+  user-select:none;
+}
+
+.theory-module-header:hover { background:var(--surface3); }
+
+.theory-module-title {
+  font-family:'Rajdhani', sans-serif;
+  font-size:15px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.theory-progress-mini {
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:var(--text3);
+}
+
+.theory-chevron {
+  color:var(--text3);
+  transition:transform 0.2s;
+  font-size:12px;
+}
+
+.theory-module-group.open .theory-chevron { transform:rotate(180deg); }
+
+.theory-items {
+  display:none;
+  padding:12px 20px;
+}
+
+.theory-module-group.open .theory-items { display:block; }
+
+.theory-item {
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+}
+
+.theory-item:last-child { border-bottom:none; }
+
+.theory-checkbox {
+  width:18px; height:18px;
+  border:2px solid var(--border2);
+  border-radius:4px;
+  flex-shrink:0;
+  margin-top:1px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+  font-size:11px;
+  color:transparent;
+}
+
+.theory-item.checked .theory-checkbox {
+  background:var(--green);
+  border-color:var(--green);
+  color:#000;
+}
+
+.theory-item-text {
+  font-size:13px;
+  color:var(--text2);
+  line-height:1.5;
+}
+
+.theory-item.checked .theory-item-text {
+  text-decoration:line-through;
+  color:var(--text3);
+}
+
+/* CONFIG */
+.config-section {
+  margin-bottom:24px;
+}
+
+.config-section h3 {
+  font-family:'Rajdhani', sans-serif;
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--text);
+  margin-bottom:16px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--border);
+}
+
+.pin-gate {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:200px;
+  flex-direction:column;
+  gap:16px;
+}
+
+.pin-input {
+  text-align:center;
+  font-size:24px;
+  letter-spacing:8px;
+  font-family:'IBM Plex Mono', monospace;
+  width:160px;
+}
+
+/* TOAST */
+.toast-container {
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.toast {
+  padding:12px 18px;
+  border-radius:8px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  font-size:13px;
+  color:var(--text);
+  box-shadow:0 4px 20px rgba(0,0,0,0.12);
+  animation:slideIn 0.3s ease;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.toast.success { border-color:var(--green); }
+.toast.error { border-color:var(--red); }
+.toast.info { border-color:var(--accent); }
+
+@keyframes slideIn {
+  from { transform:translateX(60px); opacity:0; }
+  to { transform:translateX(0); opacity:1; }
+}
+
+/* MODAL */
+.modal-overlay {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:500;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(4px);
+}
+
+.modal-overlay.hidden { display:none; }
+
+.modal {
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:12px;
+  padding:28px;
+  width:100%;
+  max-width:500px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.15);
+}
+
+.modal-title {
+  font-family:'Rajdhani', sans-serif;
+  font-size:20px;
+  font-weight:700;
+  margin-bottom:20px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.modal-actions {
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:20px;
+}
+
+/* DIVIDER */
+.divider {
+  height:1px;
+  background:var(--border);
+  margin:20px 0;
+}
+
+/* LAYOUT HELPERS */
+.flex { display:flex; }
+.flex-between { display:flex; justify-content:space-between; align-items:center; }
+.gap-12 { gap:12px; }
+.gap-16 { gap:16px; }
+.mb-16 { margin-bottom:16px; }
+.mb-24 { margin-bottom:24px; }
+
+.empty-state {
+  text-align:center;
+  padding:40px;
+  color:var(--text3);
+  font-size:13px;
+}
+
+.empty-state .icon { font-size:32px; margin-bottom:8px; }
+
+/* MODULE COLORS */
+.m1-accent::after { background:var(--m1); }
+.m2-accent::after { background:var(--m2); }
+.m3-accent::after { background:var(--m3); }
+.m4-accent::after { background:var(--m4); }
+.m5-accent::after { background:var(--m5); }
+
+.m1-fill { background:var(--m1); }
+.m2-fill { background:var(--m2); }
+.m3-fill { background:var(--m3); }
+.m4-fill { background:var(--m4); }
+.m5-fill { background:var(--m5); }
+
+.tag-m1 { background:rgba(14,122,191,0.12); color:var(--m1); }
+.tag-m2 { background:rgba(26,158,92,0.12); color:var(--m2); }
+.tag-m3 { background:rgba(124,58,237,0.12); color:var(--m3); }
+.tag-m4 { background:rgba(184,108,0,0.12); color:var(--m4); }
+.tag-m5 { background:rgba(212,78,26,0.12); color:var(--m5); }
+
+/* PILOT PROFILE */
+.pilot-info-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.info-item {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px 16px;
+}
+
+.info-item label {
+  display:block;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10px;
+  letter-spacing:1px;
+  color:var(--text3);
+  margin-bottom:4px;
+}
+
+.info-item span {
+  font-size:14px;
+  color:var(--text);
+  font-weight:500;
+}
+
+/* FLIGHT TYPE RADIO */
+.radio-group {
+  display:flex;
+  gap:10px;
+}
+
+.radio-option {
+  flex:1;
+  padding:10px;
+  border:1px solid var(--border2);
+  border-radius:6px;
+  text-align:center;
+  cursor:pointer;
+  font-size:13px;
+  color:var(--text2);
+  transition:all 0.2s;
+  user-select:none;
+}
+
+.radio-option.selected {
+  border-color:var(--accent);
+  background:var(--accent-glow);
+  color:var(--accent);
+}
+
+/* ACCORDION ANIMATION */
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.tab-panel.active { animation:fadeIn 0.25s ease; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:var(--surface2); }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+
+@media(max-width:900px) {
+  .dash-hero { grid-template-columns:1fr 1fr; }
+  .modules-grid { grid-template-columns:1fr; }
+  .form-grid { grid-template-columns:1fr; }
+  .pilot-info-grid { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <div class="header-logo">🚁</div>
+    <div>
+      <div class="header-title">MJSR Drone Training Tracker</div>
+      <div class="header-sub">Malam Jabba Ski Resort &nbsp;|&nbsp; Samsons Group of Companies</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="trainee-badge" id="traineeNameBadge" onclick="showTraineeModal()">SET TRAINEE ▾</div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</div>
+  <div class="nav-tab" onclick="switchTab('logflight')">Log Flight</div>
+  <div class="nav-tab" onclick="switchTab('theory')">Theory Checklist</div>
+  <div class="nav-tab" onclick="switchTab('flightlog')">Flight Log</div>
+  <div class="nav-tab" onclick="switchTab('config')">Config</div>
+</nav>
+
+<main>
+
+<!-- ============================================================ DASHBOARD ============================================================ -->
+<div class="tab-panel active" id="tab-dashboard">
+
+  <div class="flex-between mb-24" style="margin-bottom:20px;margin-top:4px;">
+    <div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;" id="dashGreeting">Training Progress Overview</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:2px;" id="dashSubtitle">Instructor: Martin Schultz, GM — MJSR Drone Operations Training Programme</div>
+    </div>
+  </div>
+
+  <!-- HERO STATS -->
+  <div class="dash-hero">
+    <div class="stat-card m1-accent">
+      <div class="stat-label">Total Flight Hours</div>
+      <div class="stat-value" id="statTotalHours">0.0</div>
+      <div class="stat-sub">hrs logged</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--green)">
+      <div class="stat-label">Current Module</div>
+      <div class="stat-value" id="statCurrentModule" style="font-size:28px;color:var(--accent);">M1</div>
+      <div class="stat-sub" id="statModuleName">Foundation Level</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--gold)">
+      <div class="stat-label">Solo Hours</div>
+      <div class="stat-value" id="statSoloHours" style="color:var(--gold);">0.0</div>
+      <div class="stat-sub">hrs unsupervised</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--m3)">
+      <div class="stat-label">Theory Completed</div>
+      <div class="stat-value" id="statTheory" style="color:var(--m3);">0%</div>
+      <div class="stat-sub" id="statTheorySub">0 of 0 items</div>
+    </div>
+  </div>
+
+  <!-- MODULE PROGRESS CARDS -->
+  <div class="card-title" style="margin-bottom:16px;">Module Progress</div>
+  <div class="modules-grid" id="moduleGrid"></div>
+
+  <!-- RECENT FLIGHTS -->
+  <div class="card">
+    <div class="card-title">Recent Flights</div>
+    <div class="log-table-wrap">
+      <table id="recentFlightsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Duration</th>
+            <th>Module</th>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="recentFlightsTbody">
+          <tr><td colspan="7" class="empty-state"><div class="icon">✈️</div>No flights logged yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ LOG FLIGHT ============================================================ -->
+<div class="tab-panel" id="tab-logflight">
+  <div style="max-width:720px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px;margin-top:4px;">Log New Flight Session</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:24px;">Record each flight session with full details. All entries are permanent.</div>
+
+    <div class="card">
+      <div class="card-title">Flight Details</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="flightDate">
+        </div>
+        <div class="form-group">
+          <label>Duration (hours)</label>
+          <input type="number" id="flightDuration" placeholder="e.g. 1.5" step="0.1" min="0.1" max="8">
+        </div>
+        <div class="form-group">
+          <label>Module</label>
+          <select id="flightModule">
+            <option value="1">Module 1 — Foundation Level</option>
+            <option value="2">Module 2 — Basic Operations</option>
+            <option value="3">Module 3 — Content Creator Skills</option>
+            <option value="4">Module 4 — Advanced Operations</option>
+            <option value="5">Module 5 — Expert Certification</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Drone / Equipment</label>
+          <input type="text" id="flightDrone" placeholder="e.g. DJI Mini 3 Pro">
+        </div>
+        <div class="form-group full">
+          <label>Location</label>
+          <input type="text" id="flightLocation" placeholder="e.g. MJSR Training Area — Main Slope">
+        </div>
+        <div class="form-group full">
+          <label>Flight Type</label>
+          <div class="radio-group" id="flightTypeGroup">
+            <div class="radio-option selected" data-val="Supervised" onclick="selectRadio(this,'flightTypeGroup')">Supervised</div>
+            <div class="radio-option" data-val="Solo" onclick="selectRadio(this,'flightTypeGroup')">Solo</div>
+            <div class="radio-option" data-val="Dual Control" onclick="selectRadio(this,'flightTypeGroup')">Dual Control</div>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label>Weather / Conditions</label>
+          <input type="text" id="flightWeather" placeholder="e.g. Clear, light wind 10 km/h, visibility excellent">
+        </div>
+        <div class="form-group full">
+          <label>Session Notes</label>
+          <textarea id="flightNotes" placeholder="Describe exercises completed, skills practiced, any incidents or notable observations..."></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="clearFlightForm()">Clear</button>
+        <button class="btn btn-primary" onclick="logFlight()">Log Flight Session</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ THEORY ============================================================ -->
+<div class="tab-panel" id="tab-theory">
+
+  <div class="flex-between" style="margin-bottom:20px;margin-top:4px;">
+    <div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;">Theory Delivery Checklist</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:2px;">Instructor confirms each theory topic has been delivered. Tick to mark as taught.</div>
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text3);" id="theoryTotalProgress">0 / 0 delivered</div>
+  </div>
+
+  <div id="theoryList"></div>
+
+</div>
+
+<!-- ============================================================ FLIGHT LOG ============================================================ -->
+<div class="tab-panel" id="tab-flightlog">
+  <div class="flex-between mb-16" style="margin-top:4px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;">Full Flight Log</div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <select id="filterModule" onchange="renderFlightLog()" style="font-size:12px;padding:6px 10px;">
+        <option value="">All Modules</option>
+        <option value="1">Module 1</option>
+        <option value="2">Module 2</option>
+        <option value="3">Module 3</option>
+        <option value="4">Module 4</option>
+        <option value="5">Module 5</option>
+      </select>
+      <button class="btn btn-danger" onclick="clearAllFlights()" style="font-size:12px;padding:7px 14px;">Clear All</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="log-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Module</th>
+            <th>Duration</th>
+            <th>Cumulative</th>
+            <th>Type</th>
+            <th>Drone</th>
+            <th>Location</th>
+            <th>Weather</th>
+            <th>Notes</th>
+            <th>Del</th>
+          </tr>
+        </thead>
+        <tbody id="flightLogTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ CONFIG ============================================================ -->
+<div class="tab-panel" id="tab-config">
+
+  <div id="configLocked">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px;margin-top:4px;">Configuration</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:24px;">Instructor access required. Enter PIN to configure programme settings.</div>
+    <div class="card" style="max-width:400px;">
+      <div class="pin-gate">
+        <div style="font-size:32px;">🔒</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:600;color:var(--text2);">Enter Instructor PIN</div>
+        <input type="password" id="configPinInput" class="pin-input" maxlength="4" placeholder="••••" oninput="checkConfigPin()">
+        <div style="font-size:12px;color:var(--text3);">Default PIN: 1234</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="configUnlocked" style="display:none;">
+    <div class="flex-between" style="margin-bottom:20px;margin-top:4px;">
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;">Configuration — Instructor Panel</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:2px;">Manage trainee, module settings, and programme data.</div>
+      </div>
+      <button class="btn btn-ghost" style="font-size:12px;" onclick="lockConfig()">Lock</button>
+    </div>
+
+    <!-- TRAINEE CONFIG -->
+    <div class="config-section">
+      <h3>Trainee Profile</h3>
+      <div class="form-grid" style="max-width:600px;">
+        <div class="form-group">
+          <label>Trainee Name</label>
+          <input type="text" id="cfgTraineeName" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" id="cfgStartDate">
+        </div>
+        <div class="form-group">
+          <label>Drone Model(s)</label>
+          <input type="text" id="cfgDrones" placeholder="e.g. DJI Mini 3 Pro, DJI Air 3">
+        </div>
+        <div class="form-group">
+          <label>Training Location</label>
+          <input type="text" id="cfgLocation" placeholder="e.g. MJSR, Swat Valley">
+        </div>
+        <div class="form-group full">
+          <button class="btn btn-primary" onclick="saveTraineeConfig()">Save Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- MODULE SIGN-OFF -->
+    <div class="config-section">
+      <h3>Module Sign-Off</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:600px;" id="moduleSignoffList"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- PIN CHANGE -->
+    <div class="config-section">
+      <h3>Change Instructor PIN</h3>
+      <div class="form-grid" style="max-width:400px;">
+        <div class="form-group">
+          <label>New PIN (4 digits)</label>
+          <input type="password" id="cfgNewPin" maxlength="4" placeholder="••••">
+        </div>
+        <div class="form-group">
+          <label>Confirm PIN</label>
+          <input type="password" id="cfgConfirmPin" maxlength="4" placeholder="••••">
+        </div>
+        <div class="form-group full">
+          <button class="btn btn-gold" onclick="changePin()">Update PIN</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- GAS URL CONFIG -->
+    <div class="config-section">
+      <h3>Google Apps Script URL</h3>
+      <div class="form-grid" style="max-width:700px;">
+        <div class="form-group full">
+          <label>Web App URL (paste after deployment)</label>
+          <input type="text" id="cfgGasUrl" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <div class="form-group full" style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="saveGasUrl()">Save URL &amp; Initialise Sheet</button>
+          <button class="btn btn-ghost" onclick="syncNow()">Sync Now</button>
+        </div>
+        <div class="form-group full" id="gasUrlStatus" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);"></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- DATA MANAGEMENT -->
+    <div class="config-section">
+      <h3>Data Management</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="exportData()">Export JSON Backup</button>
+        <button class="btn btn-danger" onclick="resetAllData()">Reset All Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- TRAINEE MODAL -->
+<div class="modal-overlay hidden" id="traineeModal">
+  <div class="modal">
+    <div class="modal-title">👤 Trainee Information</div>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label>Trainee Name</label>
+      <input type="text" id="modalTraineeName" placeholder="Enter trainee full name">
+    </div>
+    <div class="form-group">
+      <label>Start Date</label>
+      <input type="date" id="modalStartDate">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeTraineeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTrainee()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// DATA MODEL
+// ============================================================
+const MODULES = [
+  {
+    id:1, name:"Foundation Level", badge:"Foundation Badge",
+    hoursFrom:0, hoursTo:5, color:"var(--m1)", colorClass:"m1",
+    theory:[
+      "Drone hardware overview: frame types, flight controllers, ESCs, motors, propellers, gimbal systems",
+      "LiPo battery fundamentals: charging, storage, handling, fire risk, safe disposal",
+      "Understanding the controller: stick layout (Mode 2), button functions, telemetry readout",
+      "Flight physics basics: lift, thrust, torque, gyroscopic effects, wind effects",
+      "Pakistan CAA regulations overview and MJSR safety rules",
+      "Understanding flight modes: GPS, Altitude Hold, Sport/Manual",
+      "DJI app setup: compass calibration, IMU calibration, RTH settings"
+    ],
+    practical:[
+      "Equipment familiarisation and pre-flight checklist",
+      "Powering on, compass calibration, IMU calibration",
+      "Takeoff and hover at 2m — stability and control",
+      "Basic directional control: forward, back, left, right",
+      "Controlled landing on designated LZ marker",
+      "Emergency stop and RTH activation drills",
+      "Slow rotation (yaw) practice — left and right 360°"
+    ]
+  },
+  {
+    id:2, name:"Basic Operations", badge:"Basic Pilot Certificate",
+    hoursFrom:5, hoursTo:15, color:"var(--m2)", colorClass:"m2",
+    theory:[
+      "Understanding telemetry: signal strength, satellite count, battery voltage curves",
+      "Wind assessment: reading conditions at altitude vs ground level",
+      "Gimbal and camera basics: pitch control, exposure modes",
+      "Flight planning: selecting safe takeoff/landing zones, identifying hazards",
+      "Understanding GPS accuracy limitations and drift in mountainous terrain",
+      "Legal and ethical filming: consent, privacy, restricted zones"
+    ],
+    practical:[
+      "Controlled ascent to 100m and stable hover",
+      "Figure-8 flight pattern at 30m altitude",
+      "Square pattern with consistent altitude hold",
+      "Introduction to gimbal tilt — static composition shots",
+      "Controlled return-to-home from 200m distance",
+      "Flying in light wind (10–20 km/h) — stability practice",
+      "Basic panorama capture: rotate 360° at altitude",
+      "Landing on irregular/sloped surface",
+      "Battery swap procedure and mid-session restart"
+    ]
+  },
+  {
+    id:3, name:"Content Creator Skills", badge:"Content Creator Certificate",
+    hoursFrom:15, hoursTo:30, color:"var(--m3)", colorClass:"m3",
+    theory:[
+      "Cinematic drone movement vocabulary: reveal, orbit, push-in, pull-back, tracking, flyover",
+      "Camera settings for drone video: frame rates, shutter speed rule (180°), ISO management",
+      "ND filter selection by lighting conditions in mountain snow environments",
+      "Color profiles: D-Log / D-Cinelike vs normal color — when to shoot flat",
+      "Composition principles: rule of thirds, leading lines, symmetry, scale",
+      "Vertical format (9:16) vs horizontal (16:9) shooting for platforms",
+      "Planning a shot list: location scouting, light direction, subject movement"
+    ],
+    practical:[
+      "Reveal shot: ascend from behind ridge to expose landscape",
+      "Orbit (circle) around a fixed subject at constant radius",
+      "Tracking shot: follow a moving subject (skier, vehicle)",
+      "Cinematic push-in over mountain terrain",
+      "Dramatic pull-back reveal from close foreground",
+      "Low-level flight through terrain (valleys, tree lines)",
+      "Capturing ski runs and chairlift operations",
+      "Shooting in full manual camera mode with ND filters",
+      "Composition exercise: 5 shots in 5 different styles",
+      "First solo supervised content session at MJSR"
+    ]
+  },
+  {
+    id:4, name:"Advanced Operations", badge:"Advanced Pilot Certificate",
+    hoursFrom:30, hoursTo:50, color:"var(--m4)", colorClass:"m4",
+    theory:[
+      "Advanced weather reading: orographic lift, valley winds, thermal activity",
+      "High-altitude operations: air density effects above 2,000m ASL",
+      "Multi-battery long-session planning and heat management",
+      "Advanced flight modes: ActiveTrack, Point of Interest, Waypoints",
+      "Post-processing workflow: LUTs, color grading, stabilization in DaVinci Resolve / Premiere"
+    ],
+    practical:[
+      "Flying in moderate wind (20–30 km/h) — maintained composition",
+      "ActiveTrack: subject tracking on steep slope terrain",
+      "Waypoint mission planning and autonomous flight review",
+      "Night / golden hour shoot — exposure management",
+      "Multi-battery event coverage session (1hr+ operation)",
+      "Mountain ridge flying — proximity and depth perception",
+      "Coordinated filming with ground crew (radio comms)",
+      "Emergency scenario drill: engine failure simulation",
+      "Solo content session at MJSR — instructor not present"
+    ]
+  },
+  {
+    id:5, name:"Expert Certification", badge:"Expert Content Pilot Award",
+    hoursFrom:50, hoursTo:null, color:"var(--m5)", colorClass:"m5",
+    theory:[
+      "Full autonomous operations: lead a content production day end-to-end",
+      "Expert cinematography: deliver a 90-second+ graded showreel (6+ techniques)",
+      "Production leadership: shot list planning, battery logistics, briefing",
+      "All-weather mountain flying: manage challenging conditions independently",
+      "Equipment fault diagnosis: identify and report drone faults",
+      "Regulatory master review: PCAA compliance and airspace awareness",
+      "Verbal debrief with instructor: emergency procedures and knowledge assessment"
+    ],
+    practical:[
+      "Deliver expert portfolio showreel (min. 90s, min. 6 cinematic techniques)",
+      "Lead one full production session unaided with approved shot list",
+      "Demonstrate minimum 50 cumulative logged hours (15 solo)",
+      "Pass comprehensive verbal debrief with instructor",
+      "Demonstrate all-weather operation in demanding conditions",
+      "Complete formal assessment checklist with instructor sign-off"
+    ]
+  }
+];
+
+// ============================================================
+// GAS BACKEND
+// ============================================================
+let GAS_URL = localStorage.getItem('mjsr_gas_url') || 'https://script.google.com/macros/s/AKfycbwRhNVkGAD-qQwNxH6YjIN2d0JEYEFU1PECJxyDUExsq1ErZbtu_sZcRQDnkDAKYQ-G/exec';
+
+async function gasPost(payload) {
+  const url = window._GAS_URL_OVERRIDE || GAS_URL;
+  if (!url) return { ok: true, offline: true };
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  } catch(err) {
+    console.warn('GAS call failed:', err.message);
+    return { ok: false, offline: true };
+  }
+}
+
+function showSyncBadge(status) {
+  let badge = document.getElementById('syncBadge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'syncBadge';
+    badge.style.cssText = 'position:fixed;bottom:24px;left:24px;padding:5px 14px;border-radius:20px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:0.5px;z-index:9998;transition:opacity 0.4s;';
+    document.body.appendChild(badge);
+  }
+  const cfg = {
+    syncing: ['#e8f0fe','#1a6fdb','⟳  Syncing to Sheet...'],
+    synced:  ['#e8f8ef','#1a9e5c','✓  Sheet Synced'],
+    offline: ['#fef9e8','#c87800','◌  Local Only (no URL set)'],
+    error:   ['#fde8ea','#d93545','✕  Sync Failed']
+  }[status] || ['#fef9e8','#c87800','◌  Offline'];
+  badge.style.background = cfg[0];
+  badge.style.color = cfg[1];
+  badge.style.border = '1px solid ' + cfg[1];
+  badge.style.opacity = '1';
+  badge.textContent = cfg[2];
+  if (status === 'synced') setTimeout(() => { badge.style.opacity = '0'; }, 3000);
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  trainee: { name:"", startDate:"" },
+  flights: [],
+  theoryChecked: {},
+  moduleSignoff: {},
+  pin: "1234",
+  nextId: 1
+};
+
+function saveLocalState() {
+  localStorage.setItem('mjsr_drone_tracker', JSON.stringify(state));
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('mjsr_drone_tracker');
+    if(s) state = Object.assign(state, JSON.parse(s));
+  } catch(e){}
+}
+
+function saveState() {
+  saveLocalState();
+}
+
+async function loadFromSheet() {
+  if (!GAS_URL) { showSyncBadge('offline'); return; }
+  showSyncBadge('syncing');
+  const result = await gasPost({ action: 'LOAD_ALL' });
+  if (!result.ok) { showSyncBadge('error'); return; }
+  state.trainee       = result.config.trainee  || state.trainee;
+  state.pin           = result.config.pin       || state.pin;
+  state.flights       = result.flights          || [];
+  state.theoryChecked = result.theoryChecked    || {};
+  state.moduleSignoff = result.moduleSignoff    || {};
+  state.nextId        = result.nextId           || 1;
+  saveLocalState();
+  showSyncBadge('synced');
+  updateTraineeBadge();
+  renderDashboard();
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(name) {
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', ['dashboard','logflight','theory','flightlog','config'][i]===name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='dashboard') renderDashboard();
+  if(name==='theory') renderTheory();
+  if(name==='flightlog') renderFlightLog();
+  if(name==='config') renderConfig();
+}
+
+// ============================================================
+// COMPUTED
+// ============================================================
+function getTotalHours() {
+  return state.flights.reduce((s,f)=>s+parseFloat(f.duration||0),0);
+}
+
+function getSoloHours() {
+  return state.flights.filter(f=>f.type==='Solo').reduce((s,f)=>s+parseFloat(f.duration||0),0);
+}
+
+function getModuleHours(moduleId) {
+  return state.flights.filter(f=>parseInt(f.module)===moduleId).reduce((s,f)=>s+parseFloat(f.duration||0),0);
+}
+
+function getCurrentModule() {
+  const total = getTotalHours();
+  for(let i=MODULES.length-1;i>=0;i--) {
+    if(total >= MODULES[i].hoursFrom) return MODULES[i].id;
+  }
+  return 1;
+}
+
+function getModuleStatus(mod) {
+  const total = getTotalHours();
+  const signed = state.moduleSignoff[mod.id]?.signedOff;
+  if(signed) return 'complete';
+  const nextMod = MODULES.find(m=>m.id===mod.id+1);
+  if(nextMod && total >= nextMod.hoursFrom) return 'complete'; // auto when hours hit
+  if(total >= mod.hoursFrom) return mod.id === getCurrentModule() ? 'active' : 'active';
+  return 'locked';
+}
+
+function getTheoryStats() {
+  let total=0, done=0;
+  MODULES.forEach(m => {
+    const items = [...m.theory, ...m.practical];
+    items.forEach((_,i) => {
+      total++;
+      if(state.theoryChecked[`m${m.id}-${i}`]) done++;
+    });
+  });
+  return {total, done};
+}
+
+function getModuleTheoryStats(mod) {
+  const items = [...mod.theory, ...mod.practical];
+  let done=0;
+  items.forEach((_,i) => { if(state.theoryChecked[`m${mod.id}-${i}`]) done++; });
+  return { total:items.length, done };
+}
+
+// ============================================================
+// DASHBOARD RENDER
+// ============================================================
+function renderDashboard() {
+  const total = getTotalHours();
+  const solo = getSoloHours();
+  const curMod = getCurrentModule();
+  const mod = MODULES.find(m=>m.id===curMod);
+  const theoryStats = getTheoryStats();
+
+  document.getElementById('statTotalHours').textContent = total.toFixed(1);
+  document.getElementById('statCurrentModule').textContent = 'M'+curMod;
+  document.getElementById('statModuleName').textContent = mod.name;
+  document.getElementById('statSoloHours').textContent = solo.toFixed(1);
+  document.getElementById('statTheory').textContent = theoryStats.total ? Math.round(theoryStats.done/theoryStats.total*100)+'%' : '0%';
+  document.getElementById('statTheorySub').textContent = `${theoryStats.done} of ${theoryStats.total} items`;
+
+  if(state.trainee.name) {
+    document.getElementById('dashGreeting').textContent = state.trainee.name + ' — Training Progress';
+  }
+
+  // Module cards
+  const grid = document.getElementById('moduleGrid');
+  grid.innerHTML = '';
+  MODULES.forEach(m => {
+    const status = getModuleStatus(m);
+    const modHrs = getModuleHours(m.id);
+    const rangeHrs = m.hoursTo ? m.hoursTo - m.hoursFrom : null;
+    const hoursInModule = Math.min(modHrs, rangeHrs||modHrs);
+    const pct = rangeHrs ? Math.min(100, (hoursInModule / rangeHrs)*100) : (modHrs > 0 ? 100 : 0);
+    const remaining = m.hoursTo ? Math.max(0, m.hoursTo - total) : null;
+    const tStats = getModuleTheoryStats(m);
+
+    let statusBadge = '';
+    if(status==='complete') statusBadge = `<span class="module-status-badge status-complete">✓ COMPLETE</span>`;
+    else if(status==='active') statusBadge = `<span class="module-status-badge status-active">● ACTIVE</span>`;
+    else statusBadge = `<span class="module-status-badge status-locked">🔒 LOCKED</span>`;
+
+    let remainText = '';
+    if(status==='active' && remaining !== null) {
+      remainText = `<div class="hours-remaining">⏱ <strong>${remaining.toFixed(1)} hrs</strong>&nbsp;remaining to unlock next module</div>`;
+    } else if(status==='active' && m.id===5) {
+      remainText = `<div class="hours-remaining">⏱ Expert level — no upper limit</div>`;
+    }
+
+    grid.innerHTML += `
+      <div class="module-card ${status==='active'?'active-module':''} ${status==='complete'?'completed-module':''} ${status==='locked'?'locked-module':''}">
+        <div class="module-header">
+          <div>
+            <div class="module-number">MODULE ${m.id}</div>
+            <div class="module-name">${m.name}</div>
+            <div class="module-hours-range">${m.hoursFrom}${m.hoursTo?'–'+m.hoursTo:'+'}h gate</div>
+          </div>
+          ${statusBadge}
+        </div>
+        <div class="module-badge-name">🏅 ${m.badge}</div>
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span>Flight Hours in Module</span>
+            <span>${modHrs.toFixed(1)}${rangeHrs?' / '+rangeHrs+'h':' hrs'}</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill m${m.id}-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+        ${remainText}
+        <div class="theory-summary">
+          📖 Theory: <span>${tStats.done}/${tStats.total} topics delivered</span>
+        </div>
+      </div>`;
+  });
+
+  // Recent flights
+  const tbody = document.getElementById('recentFlightsTbody');
+  const recent = [...state.flights].reverse().slice(0,8);
+  if(!recent.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><div class="icon">✈️</div>No flights logged yet.</td></tr>`;
+    return;
+  }
+  let cum=0;
+  const allFlights = [...state.flights];
+  tbody.innerHTML = recent.map(f => {
+    const m = MODULES.find(mm=>mm.id===parseInt(f.module));
+    return `<tr>
+      <td class="highlight">#${f.id}</td>
+      <td>${f.date}</td>
+      <td class="highlight">${parseFloat(f.duration).toFixed(1)}h</td>
+      <td><span class="module-tag tag-m${f.module}">M${f.module}</span></td>
+      <td>${f.type}</td>
+      <td>${f.location||'—'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.notes||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// LOG FLIGHT
+// ============================================================
+function selectRadio(el, groupId) {
+  document.querySelectorAll(`#${groupId} .radio-option`).forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function getRadioVal(groupId) {
+  const sel = document.querySelector(`#${groupId} .radio-option.selected`);
+  return sel ? sel.dataset.val : '';
+}
+
+async function logFlight() {
+  const date = document.getElementById('flightDate').value;
+  const duration = parseFloat(document.getElementById('flightDuration').value);
+  const module_ = document.getElementById('flightModule').value;
+  const drone = document.getElementById('flightDrone').value.trim();
+  const location = document.getElementById('flightLocation').value.trim();
+  const type = getRadioVal('flightTypeGroup');
+  const weather = document.getElementById('flightWeather').value.trim();
+  const notes = document.getElementById('flightNotes').value.trim();
+
+  if(!date) { toast('Please select a date.','error'); return; }
+  if(isNaN(duration)||duration<=0) { toast('Please enter a valid duration.','error'); return; }
+
+  const entry = {
+    id: state.nextId++,
+    date, duration, module:module_, drone, location, type, weather, notes
+  };
+
+  state.flights.push(entry);
+  saveState();
+  toast(`Flight session #${entry.id} logged — ${duration}h in Module ${module_}`,'success');
+  clearFlightForm();
+  renderDashboard();
+
+  // Sync to sheet
+  showSyncBadge('syncing');
+  const result = await gasPost({ action: 'LOG_FLIGHT', data: entry });
+  showSyncBadge(result.ok ? 'synced' : 'error');
+}
+
+function clearFlightForm() {
+  document.getElementById('flightDate').value = '';
+  document.getElementById('flightDuration').value = '';
+  document.getElementById('flightDrone').value = '';
+  document.getElementById('flightLocation').value = '';
+  document.getElementById('flightWeather').value = '';
+  document.getElementById('flightNotes').value = '';
+  selectRadio(document.querySelector('#flightTypeGroup .radio-option'), 'flightTypeGroup');
+}
+
+// ============================================================
+// THEORY
+// ============================================================
+function renderTheory() {
+  const container = document.getElementById('theoryList');
+  const stats = getTheoryStats();
+  document.getElementById('theoryTotalProgress').textContent = `${stats.done} / ${stats.total} delivered`;
+
+  container.innerHTML = MODULES.map(m => {
+    const items = [
+      ...m.theory.map((t,i)=>({text:t, key:`m${m.id}-${i}`, section:'Theory'})),
+      ...m.practical.map((t,i)=>({text:t, key:`m${m.id}-${m.theory.length+i}`, section:'Practical'}))
+    ];
+    const done = items.filter(it=>state.theoryChecked[it.key]).length;
+    const pct = Math.round(done/items.length*100);
+
+    const theoryItems = m.theory.map((t,i) => {
+      const key = `m${m.id}-${i}`;
+      const checked = state.theoryChecked[key];
+      return `<div class="theory-item ${checked?'checked':''}" onclick="toggleTheory('${key}',this)">
+        <div class="theory-checkbox">${checked?'✓':''}</div>
+        <div class="theory-item-text"><span style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);margin-right:6px;">THEORY</span>${t}</div>
+      </div>`;
+    }).join('');
+
+    const practicalItems = m.practical.map((t,i) => {
+      const key = `m${m.id}-${m.theory.length+i}`;
+      const checked = state.theoryChecked[key];
+      return `<div class="theory-item ${checked?'checked':''}" onclick="toggleTheory('${key}',this)">
+        <div class="theory-checkbox">${checked?'✓':''}</div>
+        <div class="theory-item-text"><span style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--m${m.id});margin-right:6px;">PRACTICAL</span>${t}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="theory-module-group" id="tmg-${m.id}">
+      <div class="theory-module-header" onclick="toggleTheoryGroup(${m.id})">
+        <div class="theory-module-title">
+          <span class="module-tag tag-m${m.id}" style="font-size:11px;">M${m.id}</span>
+          ${m.name}
+          <span style="font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace;font-weight:400;">${m.badge}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="theory-progress-mini">${done}/${items.length} &nbsp; ${pct}%</div>
+          <div style="width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+            <div style="width:${pct}%;height:100%;background:var(--m${m.id});border-radius:2px;"></div>
+          </div>
+          <div class="theory-chevron">▼</div>
+        </div>
+      </div>
+      <div class="theory-items">
+        ${theoryItems}
+        <div style="height:8px;"></div>
+        ${practicalItems}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTheoryGroup(id) {
+  const el = document.getElementById('tmg-'+id);
+  el.classList.toggle('open');
+}
+
+async function toggleTheory(key, row) {
+  state.theoryChecked[key] = !state.theoryChecked[key];
+  saveState();
+  row.classList.toggle('checked', state.theoryChecked[key]);
+  row.querySelector('.theory-checkbox').textContent = state.theoryChecked[key] ? '✓' : '';
+  const mId = parseInt(key.split('-')[0].replace('m',''));
+  const mod = MODULES.find(m=>m.id===mId);
+  const allItems = [...mod.theory, ...mod.practical];
+  let done=0;
+  allItems.forEach((_,i) => { if(state.theoryChecked[`m${mId}-${i}`]) done++; });
+  const pct = Math.round(done/allItems.length*100);
+  const grp = document.getElementById('tmg-'+mId);
+  if(grp) {
+    grp.querySelector('.theory-progress-mini').textContent = `${done}/${allItems.length}   ${pct}%`;
+    grp.querySelector('[style*="width:80px"]').querySelector('div').style.width = pct+'%';
+  }
+  const s = getTheoryStats();
+  const el = document.getElementById('theoryTotalProgress');
+  if(el) el.textContent = `${s.done} / ${s.total} delivered`;
+
+  // Sync to sheet — identify what this item is
+  const itemIndex = parseInt(key.split('-')[1]);
+  const isTheory = itemIndex < mod.theory.length;
+  const section = isTheory ? 'Theory' : 'Practical';
+  const relIndex = isTheory ? itemIndex : itemIndex - mod.theory.length;
+  const text = isTheory ? mod.theory[itemIndex] : mod.practical[relIndex];
+  showSyncBadge('syncing');
+  const result = await gasPost({
+    action: 'SET_THEORY',
+    data: { key, moduleId: mId, section, itemIndex, text, checked: state.theoryChecked[key] }
+  });
+  showSyncBadge(result.ok ? 'synced' : 'error');
+}
+
+// ============================================================
+// FLIGHT LOG
+// ============================================================
+function renderFlightLog() {
+  const filter = document.getElementById('filterModule')?.value;
+  let flights = [...state.flights];
+  if(filter) flights = flights.filter(f=>f.module===filter);
+
+  let cum = 0;
+  const allFlights = [...state.flights];
+  // compute cumulative for all flights in order
+  const cumMap = {};
+  let runningCum = 0;
+  allFlights.forEach(f => { runningCum += parseFloat(f.duration||0); cumMap[f.id] = runningCum; });
+
+  const tbody = document.getElementById('flightLogTbody');
+  if(!flights.length) {
+    tbody.innerHTML = `<tr><td colspan="11" class="empty-state"><div class="icon">📋</div>No entries found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = flights.map(f => `
+    <tr>
+      <td class="highlight">#${f.id}</td>
+      <td>${f.date}</td>
+      <td><span class="module-tag tag-m${f.module}">M${f.module}</span></td>
+      <td class="highlight">${parseFloat(f.duration).toFixed(1)}h</td>
+      <td>${(cumMap[f.id]||0).toFixed(1)}h</td>
+      <td>${f.type}</td>
+      <td>${f.drone||'—'}</td>
+      <td>${f.location||'—'}</td>
+      <td>${f.weather||'—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.notes||'—'}</td>
+      <td><button onclick="deleteFlight(${f.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">✕</button></td>
+    </tr>`).join('');
+}
+
+async function deleteFlight(id) {
+  if(!confirm('Mark this flight as VOID? It will be hidden from the portal but retained in the sheet for audit.')) return;
+  state.flights = state.flights.filter(f=>f.id!==id);
+  saveState();
+  renderFlightLog();
+  toast('Flight entry voided.','info');
+  showSyncBadge('syncing');
+  const result = await gasPost({ action: 'VOID_FLIGHT', id: id });
+  showSyncBadge(result.ok ? 'synced' : 'error');
+}
+
+function clearAllFlights() {
+  if(!confirm('Delete ALL flight entries? This cannot be undone.')) return;
+  state.flights = [];
+  state.nextId = 1;
+  saveState();
+  renderFlightLog();
+  toast('All flights cleared.','info');
+}
+
+// ============================================================
+// CONFIG
+// ============================================================
+function checkConfigPin() {
+  const val = document.getElementById('configPinInput').value;
+  if(val === state.pin) {
+    document.getElementById('configLocked').style.display = 'none';
+    document.getElementById('configUnlocked').style.display = 'block';
+    renderConfig();
+  }
+}
+
+function lockConfig() {
+  document.getElementById('configLocked').style.display = 'block';
+  document.getElementById('configUnlocked').style.display = 'none';
+  document.getElementById('configPinInput').value = '';
+}
+
+function renderConfig() {
+  document.getElementById('cfgGasUrl').value = localStorage.getItem('mjsr_gas_url') || '';
+  document.getElementById('cfgTraineeName').value = state.trainee.name||'';
+  document.getElementById('cfgStartDate').value = state.trainee.startDate||'';
+  document.getElementById('cfgDrones').value = state.trainee.drones||'';
+  document.getElementById('cfgLocation').value = state.trainee.location||'';
+
+  // Module sign-off
+  const list = document.getElementById('moduleSignoffList');
+  list.innerHTML = MODULES.map(m => {
+    const so = state.moduleSignoff[m.id]||{};
+    const total = getTotalHours();
+    const eligible = total >= m.hoursTo || m.id===5;
+    return `<div class="card" style="padding:14px 18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;">Module ${m.id} — ${m.name}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">${m.badge} &nbsp;|&nbsp; Hours gate: ${m.hoursFrom}${m.hoursTo?'–'+m.hoursTo:'+'}h</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          ${so.signedOff ? `<span class="module-status-badge status-complete">✓ SIGNED OFF ${so.date?'— '+so.date:''}</span>
+            <button class="btn btn-danger" style="font-size:11px;padding:5px 10px;" onclick="revokeSignoff(${m.id})">Revoke</button>` :
+            `<button class="btn btn-gold" style="font-size:11px;padding:5px 10px;" onclick="signOffModule(${m.id})">Sign Off Module</button>`}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function saveTraineeConfig() {
+  state.trainee.name     = document.getElementById('cfgTraineeName').value.trim();
+  state.trainee.startDate= document.getElementById('cfgStartDate').value;
+  state.trainee.drones   = document.getElementById('cfgDrones').value.trim();
+  state.trainee.location = document.getElementById('cfgLocation').value.trim();
+  saveState();
+  updateTraineeBadge();
+  toast('Trainee profile saved.','success');
+  showSyncBadge('syncing');
+  const result = await gasPost({ action: 'SAVE_CONFIG', data: state.trainee });
+  showSyncBadge(result.ok ? 'synced' : 'error');
+}
+
+async function signOffModule(id) {
+  const today = new Date().toISOString().split('T')[0];
+  state.moduleSignoff[id] = { signedOff:true, date:today };
+  saveState();
+  renderConfig();
+  toast(`Module ${id} signed off.`,'success');
+  showSyncBadge('syncing');
+  const result = await gasPost({ action: 'MODULE_SIGNOFF', data: { moduleId: id, date: today } });
+  showSyncBadge(result.ok ? 'synced' : 'error');
+}
+
+async function revokeSignoff(id) {
+  if(!confirm('Revoke sign-off for Module '+id+'?')) return;
+  delete state.moduleSignoff[id];
+  saveState();
+  renderConfig();
+  toast(`Module ${id} sign-off revoked.`,'info');
+  showSyncBadge('syncing');
+  const result = await gasPost({ action: 'REVOKE_SIGNOFF', moduleId: id });
+  showSyncBadge(result.ok ? 'synced' : 'error');
+}
+
+async function changePin() {
+  const np = document.getElementById('cfgNewPin').value;
+  const cp = document.getElementById('cfgConfirmPin').value;
+  if(np.length!==4||isNaN(np)) { toast('PIN must be exactly 4 digits.','error'); return; }
+  if(np!==cp) { toast('PINs do not match.','error'); return; }
+  state.pin = np;
+  saveState();
+  toast('PIN updated successfully.','success');
+  document.getElementById('cfgNewPin').value='';
+  document.getElementById('cfgConfirmPin').value='';
+  showSyncBadge('syncing');
+  const result = await gasPost({ action: 'CHANGE_PIN', data: { pin: np } });
+  showSyncBadge(result.ok ? 'synced' : 'error');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `mjsr_drone_backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  toast('Data exported.','success');
+}
+
+function resetAllData() {
+  if(!prompt('Type RESET to confirm deletion of all data.','') === 'RESET') return;
+  const confirmed = prompt('Type RESET to confirm deletion of all data.','');
+  if(confirmed === 'RESET') {
+    localStorage.removeItem('mjsr_drone_tracker');
+    location.reload();
+  }
+}
+
+// ============================================================
+// TRAINEE MODAL
+// ============================================================
+function showTraineeModal() {
+  document.getElementById('modalTraineeName').value = state.trainee.name||'';
+  document.getElementById('modalStartDate').value = state.trainee.startDate||'';
+  document.getElementById('traineeModal').classList.remove('hidden');
+}
+
+function closeTraineeModal() {
+  document.getElementById('traineeModal').classList.add('hidden');
+}
+
+function saveTrainee() {
+  state.trainee.name = document.getElementById('modalTraineeName').value.trim();
+  state.trainee.startDate = document.getElementById('modalStartDate').value;
+  saveState();
+  updateTraineeBadge();
+  closeTraineeModal();
+  renderDashboard();
+  toast('Trainee profile updated.','success');
+}
+
+function updateTraineeBadge() {
+  const badge = document.getElementById('traineeNameBadge');
+  badge.textContent = state.trainee.name ? state.trainee.name.toUpperCase().split(' ')[0] + ' ▾' : 'SET TRAINEE ▾';
+}
+
+// ============================================================
+// GAS URL MANAGEMENT
+// ============================================================
+async function saveGasUrl() {
+  const url = document.getElementById('cfgGasUrl').value.trim();
+  if (!url || !url.startsWith('https://script.google.com')) {
+    toast('Please enter a valid Apps Script URL.', 'error'); return;
+  }
+  // Store in localStorage since GAS_URL is a const — we use a module-level var
+  localStorage.setItem('mjsr_gas_url', url);
+  document.getElementById('gasUrlStatus').textContent = 'URL saved. Initialising sheet tabs...';
+  // Patch the runtime URL
+  window._GAS_URL_OVERRIDE = url;
+  const result = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'INIT' })
+  }).then(r => r.json()).catch(e => ({ ok: false, error: e.toString() }));
+  if (result.ok) {
+    document.getElementById('gasUrlStatus').textContent = '✓ Sheet initialised. All tabs created. Syncing data...';
+    toast('Sheet initialised successfully.', 'success');
+    await loadFromSheet();
+  } else {
+    document.getElementById('gasUrlStatus').textContent = '✕ Error: ' + (result.error || 'Unknown');
+    toast('Initialisation failed. Check URL and deployment settings.', 'error');
+  }
+}
+
+async function syncNow() {
+  toast('Syncing from sheet...', 'info');
+  await loadFromSheet();
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type='info') {
+  const icon = type==='success'?'✓':type==='error'?'✗':'ℹ';
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icon}</span> ${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(()=>el.remove(), 3500);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('click', e => {
+  if(e.target === document.getElementById('traineeModal')) closeTraineeModal();
+});
+
+// Load local state first for instant render, then sync from sheet
+loadState();
+updateTraineeBadge();
+document.getElementById('flightDate').value = new Date().toISOString().split('T')[0];
+renderDashboard();
+
+// Async sheet load — updates UI when data arrives
+loadFromSheet();
+</script>
+</body>
+</html>
