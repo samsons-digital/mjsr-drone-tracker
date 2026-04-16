@@ -1345,27 +1345,42 @@ const MODULES = [
 // ============================================================
 let GAS_URL = localStorage.getItem('mjsr_gas_url') || 'https://script.google.com/macros/s/AKfycbwRhNVkGAD-qQwNxH6YjIN2d0JEYEFU1PECJxyDUExsq1ErZbtu_sZcRQDnkDAKYQ-G/exec';
 
-async function gasPost(payload) {
-  const url = window._GAS_URL_OVERRIDE || GAS_URL;
-  if (!url) return { ok: true, offline: true };
-  try {
-    // Use GET with encoded payload — avoids CORS preflight issues from GitHub Pages
+// JSONP — bypasses CORS entirely, works from GitHub Pages without any server headers needed
+function gasCall(payload) {
+  return new Promise((resolve) => {
+    const url = window._GAS_URL_OVERRIDE || GAS_URL;
+    if (!url) { resolve({ ok: true, offline: true }); return; }
+
+    const cbName = 'gasCb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      resolve({ ok: false, error: 'Request timed out after 15s' });
+    }, 15000);
+
+    window[cbName] = (data) => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      resolve(data);
+    };
+
     const encoded = encodeURIComponent(JSON.stringify(payload));
-    const res = await fetch(`${url}?payload=${encoded}`, {
-      method: 'GET',
-      redirect: 'follow'
-    });
-    const text = await res.text();
-    // GAS sometimes wraps in HTML on auth errors — detect and report cleanly
-    if (text.trim().startsWith('<')) {
-      console.warn('GAS returned HTML — likely an auth or permissions issue');
-      return { ok: false, error: 'Auth error — check deployment permissions' };
-    }
-    return JSON.parse(text);
-  } catch(err) {
-    console.warn('GAS call failed:', err.message);
-    return { ok: false, offline: true };
-  }
+    const script = document.createElement('script');
+    script.src = url + '?callback=' + cbName + '&payload=' + encoded;
+    script.onerror = () => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      resolve({ ok: false, error: 'Script load error — check deployment URL and permissions' });
+    };
+    document.head.appendChild(script);
+  });
+}
+
+async function gasPost(payload) {
+  return gasCall(payload);
 }
 
 function showSyncBadge(status) {
