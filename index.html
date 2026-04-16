@@ -901,6 +901,7 @@ textarea { resize:vertical; min-height:80px; }
             <th>Duration</th>
             <th>Module</th>
             <th>Type</th>
+            <th>Supervisor</th>
             <th>Location</th>
             <th>Notes</th>
           </tr>
@@ -950,6 +951,11 @@ textarea { resize:vertical; min-height:80px; }
             <div class="radio-option" data-val="Solo" onclick="selectRadio(this,'flightTypeGroup')">Solo</div>
             <div class="radio-option" data-val="Dual Control" onclick="selectRadio(this,'flightTypeGroup')">Dual Control</div>
           </div>
+        </div>
+        <div class="form-group full" id="supervisorGroup">
+          <label>Supervisor Name</label>
+          <input type="text" id="flightSupervisor" placeholder="e.g. Martin Schultz">
+          <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px;font-family:'IBM Plex Mono',monospace;">Required for Supervised and Dual Control flights</div>
         </div>
         <div class="form-group full">
           <label>Weather / Conditions</label>
@@ -1010,6 +1016,7 @@ textarea { resize:vertical; min-height:80px; }
             <th>Duration</th>
             <th>Cumulative</th>
             <th>Type</th>
+            <th>Supervisor</th>
             <th>Drone</th>
             <th>Location</th>
             <th>Weather</th>
@@ -1520,6 +1527,7 @@ function renderDashboard() {
       <td class="highlight">${parseFloat(f.duration).toFixed(1)}h</td>
       <td><span class="module-tag tag-m${f.module}">M${f.module}</span></td>
       <td>${f.type}</td>
+      <td>${f.supervisor||'—'}</td>
       <td>${f.location||'—'}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.notes||'—'}</td>
     </tr>`;
@@ -1532,6 +1540,11 @@ function renderDashboard() {
 function selectRadio(el, groupId) {
   document.querySelectorAll(`#${groupId} .radio-option`).forEach(r=>r.classList.remove('selected'));
   el.classList.add('selected');
+  if (groupId === 'flightTypeGroup') {
+    const isSolo = el.dataset.val === 'Solo';
+    const grp = document.getElementById('supervisorGroup');
+    if (grp) grp.style.display = isSolo ? 'none' : 'flex';
+  }
 }
 
 function getRadioVal(groupId) {
@@ -1616,9 +1629,10 @@ async function logFlight() {
   if(!date) { toast('Please select a date.','error'); return; }
   if(isNaN(duration)||duration<=0) { toast('Please enter a valid duration.','error'); return; }
 
+  const supervisor = (type !== 'Solo') ? document.getElementById('flightSupervisor').value.trim() : '';
   const entry = {
     id: state.nextId++,
-    date, duration, module:module_, drone, location, type, weather, notes
+    date, duration, module:module_, drone, location, type, supervisor, weather, notes
   };
 
   state.flights.push(entry);
@@ -1639,6 +1653,7 @@ function clearFlightForm() {
   document.getElementById('flightDuration').value = '';
   document.getElementById('flightDrone').value = '';
   document.getElementById('flightLocation').value = '';
+  document.getElementById('flightSupervisor').value = '';
   document.getElementById('flightWeather').value = '';
   document.getElementById('flightNotes').value = '';
   selectRadio(document.querySelector('#flightTypeGroup .radio-option'), 'flightTypeGroup');
@@ -1770,6 +1785,7 @@ function renderFlightLog() {
       <td class="highlight">${parseFloat(f.duration).toFixed(1)}h</td>
       <td>${(cumMap[f.id]||0).toFixed(1)}h</td>
       <td>${f.type}</td>
+      <td>${f.supervisor||'—'}</td>
       <td>${f.drone||'—'}</td>
       <td>${f.location||'—'}</td>
       <td>${f.weather||'—'}</td>
