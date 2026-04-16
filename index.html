@@ -932,13 +932,8 @@ textarea { resize:vertical; min-height:80px; }
         </div>
         <div class="form-group">
           <label>Module</label>
-          <select id="flightModule">
-            <option value="1">Module 1 — Foundation Level</option>
-            <option value="2">Module 2 — Basic Operations</option>
-            <option value="3">Module 3 — Content Creator Skills</option>
-            <option value="4">Module 4 — Advanced Operations</option>
-            <option value="5">Module 5 — Expert Certification</option>
-          </select>
+          <select id="flightModule"></select>
+          <div id="flightModuleHint" style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:5px;font-family:'IBM Plex Mono',monospace;"></div>
         </div>
         <div class="form-group">
           <label>Drone / Equipment</label>
@@ -1366,6 +1361,7 @@ async function loadFromSheet() {
   saveLocalState();
   showSyncBadge('synced');
   updateTraineeBadge();
+  renderModuleSelect();
   renderDashboard();
 }
 
@@ -1377,6 +1373,7 @@ function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='dashboard') renderDashboard();
+  if(name==='logflight') renderModuleSelect();
   if(name==='theory') renderTheory();
   if(name==='flightlog') renderFlightLog();
   if(name==='config') renderConfig();
@@ -1542,6 +1539,70 @@ function getRadioVal(groupId) {
   return sel ? sel.dataset.val : '';
 }
 
+function renderModuleSelect() {
+  const total = getTotalHours();
+  const sel = document.getElementById('flightModule');
+  const hint = document.getElementById('flightModuleHint');
+  if (!sel) return;
+
+  // Determine which modules are unlocked (trainee has reached their hours gate)
+  const gates = [0, 5, 15, 30, 50];
+  const names = [
+    'Foundation Level',
+    'Basic Operations',
+    'Content Creator Skills',
+    'Advanced Operations',
+    'Expert Certification'
+  ];
+
+  // Current module is the highest gate reached
+  let currentModuleId = 1;
+  for (let i = gates.length - 1; i >= 0; i--) {
+    if (total >= gates[i]) { currentModuleId = i + 1; break; }
+  }
+
+  // Preserve existing selection if still valid
+  const prevVal = sel.value;
+  sel.innerHTML = '';
+
+  for (let i = 0; i < 5; i++) {
+    const modId = i + 1;
+    const unlocked = total >= gates[i];
+    const opt = document.createElement('option');
+    opt.value = modId;
+
+    if (unlocked) {
+      opt.textContent = `Module ${modId} — ${names[i]}`;
+      opt.disabled = false;
+    } else {
+      const needed = gates[i] - total;
+      opt.textContent = `Module ${modId} — ${names[i]}  🔒 (${needed.toFixed(1)}h needed)`;
+      opt.disabled = true;
+      opt.style.color = '#aaa';
+    }
+    sel.appendChild(opt);
+  }
+
+  // Set to current module by default, or restore prev if still valid
+  const prevInt = parseInt(prevVal);
+  if (prevInt && total >= gates[prevInt - 1]) {
+    sel.value = prevVal;
+  } else {
+    sel.value = currentModuleId;
+  }
+
+  // Hint text
+  if (hint) {
+    const nextGate = gates[currentModuleId]; // gate for next module
+    if (nextGate !== undefined) {
+      const remaining = (nextGate - total).toFixed(1);
+      hint.textContent = `Currently at Module ${currentModuleId} — ${remaining}h until Module ${currentModuleId + 1} unlocks`;
+    } else {
+      hint.textContent = `Module 5 active — Expert level, no upper gate`;
+    }
+  }
+}
+
 async function logFlight() {
   const date = document.getElementById('flightDate').value;
   const duration = parseFloat(document.getElementById('flightDuration').value);
@@ -1564,6 +1625,7 @@ async function logFlight() {
   saveState();
   toast(`Flight session #${entry.id} logged — ${duration}h in Module ${module_}`,'success');
   clearFlightForm();
+  renderModuleSelect();
   renderDashboard();
 
   // Sync to sheet
@@ -1937,6 +1999,7 @@ updateTraineeBadge();
 document.getElementById('flightDate').value = new Date().toISOString().split('T')[0];
 renderDashboard();
 
+renderModuleSelect();
 // Async sheet load — updates UI when data arrives
 loadFromSheet();
 </script>
