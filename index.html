@@ -1004,15 +1004,34 @@ textarea { resize:vertical; min-height:80px; }
 <!-- ============================================================ THEORY ============================================================ -->
 <div class="tab-panel" id="tab-theory">
 
-  <div class="flex-between" style="margin-bottom:20px;margin-top:4px;">
-    <div>
-      <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#ffffff;">Theory Delivery Checklist</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-top:2px;">Instructor confirms each theory topic has been delivered. Tick to mark as taught.</div>
+  <!-- THEORY PIN GATE -->
+  <div id="theoryLocked">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#ffffff;margin-bottom:4px;margin-top:4px;">Theory Delivery Checklist</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:24px;">Instructor access required to mark theory as delivered.</div>
+    <div class="card" style="max-width:400px;">
+      <div class="pin-gate">
+        <div style="font-size:32px;">🔒</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:600;color:var(--text2);">Enter Instructor PIN</div>
+        <input type="password" id="theoryPinInput" class="pin-input" maxlength="4" placeholder="••••" oninput="checkTheoryPin()">
+        <div style="font-size:12px;color:var(--text3);">Default PIN: 1234</div>
+      </div>
     </div>
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:rgba(255,255,255,0.60);" id="theoryTotalProgress">0 / 0 delivered</div>
   </div>
 
-  <div id="theoryList"></div>
+  <!-- THEORY CONTENT — shown after PIN -->
+  <div id="theoryUnlockedPanel" style="display:none;">
+    <div class="flex-between" style="margin-bottom:20px;margin-top:4px;">
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#ffffff;">Theory Delivery Checklist</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-top:2px;">Instructor confirms each theory topic has been delivered. Tick to mark as taught.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:rgba(255,255,255,0.60);" id="theoryTotalProgress">0 / 0 delivered</div>
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="lockTheory()">Lock</button>
+      </div>
+    </div>
+    <div id="theoryList"></div>
+  </div>
 
 </div>
 
@@ -1365,6 +1384,9 @@ let state = {
   pin: "1234",
   nextId: 1
 };
+
+// Session-only flags — not persisted
+let theoryUnlocked = false;
 
 function saveLocalState() {
   localStorage.setItem('mjsr_drone_tracker', JSON.stringify(state));
@@ -1720,7 +1742,30 @@ function clearFlightForm() {
 // ============================================================
 // THEORY
 // ============================================================
+function checkTheoryPin() {
+  const val = document.getElementById('theoryPinInput').value;
+  if (val === state.pin) {
+    theoryUnlocked = true;
+    document.getElementById('theoryLocked').style.display = 'none';
+    document.getElementById('theoryUnlockedPanel').style.display = 'block';
+    renderTheory();
+  }
+}
+
+function lockTheory() {
+  theoryUnlocked = false;
+  document.getElementById('theoryLocked').style.display = 'block';
+  document.getElementById('theoryUnlockedPanel').style.display = 'none';
+  document.getElementById('theoryPinInput').value = '';
+}
+
 function renderTheory() {
+  // If not unlocked, just ensure the lock screen is visible and return
+  if (!theoryUnlocked) {
+    document.getElementById('theoryLocked').style.display = 'block';
+    document.getElementById('theoryUnlockedPanel').style.display = 'none';
+    return;
+  }
   const container = document.getElementById('theoryList');
   const stats = getTheoryStats();
   document.getElementById('theoryTotalProgress').textContent = `${stats.done} / ${stats.total} delivered`;
